@@ -1,0 +1,152 @@
+# Tested on Razor 9DOF IMU Sensor Stick, DFRobot 10DOF IMU and FreeIMU v0.4
+# Initial code code developed by Jose Julio @2009 and modified by Mike Smorto @2013
+# Changes include:
+#   1. Created a color coded rectange similar to that of the FreeIMU Demo Cube
+#   2. Created a downward pointing arrow to assist in direction visualization for
+#      z-axis
+#   3. Changed font sizes
+#   4. Added data display window to see the data stream
+#   5. Added routines to convert quatenions to Euler angle ported from the
+#      FreeIMU Demo Cube based in Processing
+# 
+
+
+#from __future__ import print_function, division
+from __future__ import division
+
+import serial
+import string
+import time
+
+from visual import *
+from struct import unpack
+from binascii import unhexlify
+from math import *
+from array import *
+from ctypes import *
+
+
+grad2rad = 3.141592/180.0
+
+roll=0
+pitch=0
+yaw=0
+temp = 0.
+baro=0
+alt=0
+count = 0
+burst = 32
+told = 0
+tnew = 0
+dt = 0
+alt=0
+press = 0.
+prod_q =None
+hq = None
+k = 'n'
+
+free_q =array('f',[0.,0.,0.,0.])
+
+sea_press = 1011.9
+
+SerialPort = 'COM6'
+
+#euler = array('f',[0.,0.,0.])
+#q = array('f',[0.,0.,0.,0.])
+#acc = array('f',[0.,0.,0.])
+#magn = array('f',[0.,0.,0.])
+#gyro = array('f',[0.,0.,0.])
+
+# Main scene
+scene=display(title="10DOF DFRobot IMU test")
+scene.range=(1.2,1.2,1.2)
+
+#scene.forward = (0,-1,-0.25)
+scene.forward = (1,0,-0.25)
+scene.up=(0,0,1)
+scene.width=600
+scene.y=300
+
+
+# Main scene objects
+scene.select()
+
+# Reference axis (x,y,z)
+x_arrow=arrow(color=color.red,axis=(1,0,0), shaftwidth=0.02, fixedwidth=1)
+y_arrow=arrow(color=color.yellow,axis=(0,-1,0), shaftwidth=0.02 , fixedwidth=1)
+z_arrow=arrow(color=color.green,axis=(0,0,-1), shaftwidth=0.02, fixedwidth=1)
+b_z_axis = arrow(color=color.white, axis=(0,0,1),shaftwidth=0.02, fixedwidth=1)
+
+# labels
+label(pos=(0,0,0.8),text="10DOF DFRobot IMU test",box=0,opacity=0)
+label(pos=(0.5,0,0.8),text="Point FreeIMU's X axis to your monitor then press \"h\"",box=0,opacity=0)
+label(pos=(1,0.05,0.8),text="Disable home position by pressing \"n\"",box=0,opacity=0)
+input_home = label(pos=(1,-0.8,0.8),text='h', box=0,opacity=0) 
+
+label(pos=(1,0,0),text="X",box=0,opacity=0)
+label(pos=(0,-1,0),text="Y",box=0,opacity=0)
+label(pos=(0,0,-1),text="Z",box=0,opacity=0)
+
+# IMU object
+#platform = box(length=1, height=0.05, width=1, color=color.red)
+platform = frame()
+p_t=box(frame=platform, pos=(0,0.05,0), length=1, height=0.01, width=.5, color=color.red)
+p_b=box(frame=platform,pos=(0,-0.05,0), length=1, height=0.01, width=.5, color=color.blue)
+p_ls=box(frame=platform,pos=(0,0,.25), length=1, height=0.1, width=.01, color=color.green)
+p_rs=box(frame=platform,pos=(0,0,-.25), length=1, height=0.1, width=.01, color=color.cyan)
+p_fs=box(frame=platform,pos=(.495,0,0), length=.01, height=0.1, width=0.5, color=color.yellow)
+p_bs=box(frame=platform,pos=(-0.495,0,0), length=.01, height=0.1, width=0.5, color=color.orange)
+
+p_line = box(length=1,height=0.13,width=0.1,color=color.yellow)
+plat_arrow = arrow(color=color.green,axis=(1,0,0), shaftwidth=0.06, fixedwidth=1)
+
+# configure the serial connections (the parameters differs on the device you are connecting to)
+#p = serial.Serial(port=SerialPort,baudrate=38400, timeout = 1)
+
+time.sleep(1)
+
+
+#p.flushInput()    # clean input buffer
+
+#p.write("v")
+#line = p.readline()
+time.sleep(5)
+
+while 1 :
+    rate(200)
+
+    #p.write("z" + str(burst))
+
+    #line = p.readline()
+    #print line
+  
+    #inputStringArr = string.split(line,",")    # Fields split
+
+    
+    #roll = 0*grad2rad/10
+    #pitch = 0*grad2rad/10
+    #yaw =  0*grad2rad/10
+          
+
+    axis=(cos(pitch)*cos(yaw),-cos(pitch)*sin(yaw),sin(pitch)) 
+    up=(sin(roll)*sin(yaw)+cos(roll)*sin(pitch)*cos(yaw),sin(roll)*cos(yaw)-cos(roll)*sin(pitch)*sin(yaw),-cos(roll)*cos(pitch))
+
+    
+    platform.axis=axis
+    platform.up=up
+    platform.length=1.0
+    platform.width=0.65
+    
+    plat_arrow.axis=axis
+    plat_arrow.up=up
+    plat_arrow.length=0.8
+    
+    p_line.axis=axis
+    p_line.up=up
+    b_z_axis.axis = 0.5*vector(up)
+    
+    
+
+p.close
+        
+
