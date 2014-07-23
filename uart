@@ -1,0 +1,36 @@
+import serial
+import time
+ser = serial.Serial('COM6',115200,timeout=1)
+
+while 1:
+    ser.write(".")
+    line = ser.readline()
+    angles = line.split(",")
+    print len(angles)
+    print angles
+    print ord(angles[0])
+    if(ord(angles[0])==0):
+        ax=(ord(angles[1])+ord(angles[2])*256)
+        print "#"
+    else:
+        ax=(ord(angles[1])+ord(angles[2])*256)*-1
+        print "##"
+        
+    if(ord(angles[3])==0):
+        ay=(ord(angles[4])+ord(angles[5])*256)
+        print "#"
+    else:
+        ay=(ord(angles[4])+ord(angles[5])*256)*-1
+        print "##"
+
+    if(ord(angles[6])==0):
+        az=(ord(angles[7])+ord(angles[8])*256)
+        print "#"
+    else:
+        az=(ord(angles[7])+ord(angles[8])*256)*-1
+        print "##"
+
+    print ax
+    print ay
+    print az
+    time.sleep(1/100)
